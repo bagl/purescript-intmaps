@@ -5,6 +5,11 @@ import Data.Function (Fn2 (), runFn2)
 import Data.Int.Bits ((.^.), complement, (.&.), (.|.), zshr)
 import Prelude
 
+-- Type aliases
+----------------------------------------------------------------------------
+
+type Key = Int
+
 -- Newtypes
 ----------------------------------------------------------------------------
 
@@ -42,6 +47,9 @@ branchLeft (Mask m) k = m .&. k == 0
 
 matchPrefix :: Prefix -> Mask -> Int -> Boolean
 matchPrefix p m k = mask m k == p
+
+nomatch :: Prefix -> Mask -> Key -> Boolean
+nomatch p m k = not $ matchPrefix p m k
 
 mask :: Mask -> Int -> Prefix
 mask (Mask m) k = Prefix (_mask m k)
