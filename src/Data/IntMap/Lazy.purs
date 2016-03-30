@@ -55,14 +55,14 @@ lookup i t = go (step t)
       | otherwise      = lookup i r
 
 mapWithKey :: forall a b. (Key -> a -> b) -> IntMap a -> IntMap b
-mapWithKey f m = go (step m)
+mapWithKey f t = go (step t)
   where
     go Empty        = empty
     go (Lf k a)     = lf k (f k a)
     go (Br p m l r) = br p m (go $ step l) (go $ step r)
 
 foldrWithKey :: forall a b. (Key -> a -> b -> b) -> b -> IntMap a -> b
-foldrWithKey f z m = go z (step m)
+foldrWithKey f z t = go z (step t)
   where
     go z Empty = z
     go z (Lf k a) = f k a z
@@ -80,12 +80,12 @@ filterWithKey pred t =
     otherwise  -> empty
 
 null :: forall a. IntMap a -> Boolean
-null m = case step m of
+null t = case step t of
   Empty     -> true
   otherwise -> false
 
 instance showIntMap :: Show a => Show (IntMap a) where
-  show m = "fromStrict (fromAssocArray [" <> go (step m) <> "])"
+  show t = "fromStrict (fromAssocArray [" <> go (step t) <> "])"
     where
       go Empty        = ""
       go (Lf k v)     = "(Tuple " <> show k <> ", " <> show v <> ")"
