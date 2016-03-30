@@ -29,12 +29,12 @@ lf :: forall a. Key -> a -> IntMap a
 lf k a = unstep $ Lf k a
 
 br :: forall a. Prefix -> Mask -> IntMap a -> IntMap a -> IntMap a
-br p m t1 t2 =
-  case [step t1, step t2] of
-    [Empty, Empty] -> empty
-    [Empty, _    ] -> t2
-    [_    , Empty] -> t1
-    _              -> unstep $ Br p m t1 t2
+br p m t1 t2 = go (step t1) (step t2)
+  where
+    go Empty Empty = empty
+    go Empty _     = t2
+    go _     Empty = t1
+    go _     _     = unstep $ Br p m t1 t2
 
 empty :: forall a. IntMap a
 empty = unstep Empty
