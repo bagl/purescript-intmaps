@@ -6,6 +6,7 @@ import Data.Maybe (Maybe(Nothing, Just))
 --import Data.Tuple (Tuple(Tuple))
 import Prelude (
   class Show, show
+, class Functor, (<$>)
 , pure
 , (<<<), ($), otherwise, (==), (<>)
 )
@@ -56,11 +57,12 @@ lookup i t = go (step t)
       | otherwise      = lookup i r
 
 mapWithKey :: forall a b. (Key -> a -> b) -> IntMap a -> IntMap b
-mapWithKey f t = go (step t)
+mapWithKey f t = IntMap (go <$> runIntMap t)
   where
-    go Empty        = empty
-    go (Lf k a)     = lf k (f k a)
-    go (Br p m l r) = br p m (go $ step l) (go $ step r)
+    go Empty        = Empty
+    go (Lf k a)     = Lf k (f k a)
+    go (Br p m l r) = Br p m (mapWithKey f l) (mapWithKey f r)
+
 
 foldrWithKey :: forall a b. (Key -> a -> b -> b) -> b -> IntMap a -> b
 foldrWithKey f z t = go z (step t)
@@ -91,3 +93,6 @@ instance showIntMap :: Show a => Show (IntMap a) where
       go Empty        = ""
       go (Lf k v)     = "(Tuple " <> show k <> ", " <> show v <> ")"
       go (Br _ _ l r) = go (step l) <> ", " <> go (step r)
+
+instance functorIntMapLazy :: Functor IntMap where
+  map f = mapWithKey (\_ a -> f a)
