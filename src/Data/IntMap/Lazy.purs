@@ -1,12 +1,13 @@
 module Data.IntMap.Lazy where
 
 import Data.IntMap.Internal (Key, Prefix, Mask, branchLeft, nomatch)
-import Data.Lazy (Lazy, defer, force)
+import Data.Lazy (Lazy, force)
 import Data.Maybe (Maybe(Nothing, Just))
 --import Data.Tuple (Tuple(Tuple))
 import Prelude (
   class Show, show
-, const, (<<<), ($), otherwise, (==), (<>)
+, pure
+, (<<<), ($), otherwise, (==), (<>)
 )
 
 newtype IntMap a = IntMap (Lazy (Step a))
@@ -23,7 +24,7 @@ step :: forall a. IntMap a -> Step a
 step = force <<< runIntMap
 
 unstep :: forall a. Step a -> IntMap a
-unstep = IntMap <<< defer <<< const
+unstep = IntMap <<< pure
 
 lf :: forall a. Key -> a -> IntMap a
 lf k a = unstep $ Lf k a
