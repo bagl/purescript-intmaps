@@ -63,24 +63,22 @@ mapWithKey f t = IntMap (go <$> runIntMap t)
     go (Lf k a)     = Lf k (f k a)
     go (Br p m l r) = Br p m (mapWithKey f l) (mapWithKey f r)
 
-
 foldrWithKey :: forall a b. (Key -> a -> b -> b) -> b -> IntMap a -> b
 foldrWithKey f z t = go z (step t)
   where
-    go z Empty = z
-    go z (Lf k a) = f k a z
+    go z Empty        = z
+    go z (Lf k a)     = f k a z
     go z (Br _ _ l r) = go (go z $ step r) (step l)
 
 filter :: forall a. (a -> Boolean) -> IntMap a -> IntMap a
 filter p = filterWithKey (\_ x -> p x)
 
 filterWithKey :: forall a. (Key -> a -> Boolean) -> IntMap a -> IntMap a
-filterWithKey pred t =
+filterWithKey p t =
   case step t of
-    Br p m l r -> br p m (filterWithKey pred l) (filterWithKey pred r)
-    Lf i a
-      | pred i a  ->  t
-    otherwise  -> empty
+    Br pref m l r  -> br pref m (filterWithKey p l) (filterWithKey p r)
+    Lf i a | p i a -> t
+    _              -> empty
 
 null :: forall a. IntMap a -> Boolean
 null t = case step t of
