@@ -1,7 +1,7 @@
 module Test.Data.IntMap where
 
 import Data.Foldable (foldMap, foldr, foldl, elem)
-import Data.Array ((:))
+import Data.Array ((:), reverse)
 import Data.Tuple (Tuple(Tuple))
 import Data.Maybe (Maybe(Just, Nothing), maybe)
 import Test.Data.IntMap.Internal as Internal
@@ -92,6 +92,9 @@ props = do
     $ quickCheck \(TIntMap m1) (TIntMap m2) ->
     let is = indices m2
     in difference m1 m2 === filterWithKey (\k _ -> not (k `elem` is)) m1
+  test "insert order independent"
+    $ quickCheck \(a :: Array (Tuple Int Int)) ->
+    fromAssocArray a === fromAssocArray (reverse a)
 
 newtype TIntMap = TIntMap (IntMap String)
 
