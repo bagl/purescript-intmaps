@@ -21,6 +21,10 @@ testAll = test "Data.IntMap.Lazy" do
   test "QuickCheck" props
 
 tests = do
+  test "insert into empty" do
+    Assert.equal (singleton 1 10) (insert 1 10 empty)
+  test "insert same key twice" do
+    Assert.equal (singleton 1 20) (insert 1 20 $ singleton 1 10)
   test "insertion order independent" do
     test "2 pairs" $ Assert.equal
       (fromAssocArray [Tuple 0 0, Tuple 1 1])
