@@ -25,14 +25,6 @@ tests = do
     Assert.equal (singleton 1 10) (insert 1 10 empty)
   test "insert same key twice" do
     Assert.equal (singleton 1 20) (insert 1 20 $ singleton 1 10)
-  test "insertion order independent" do
-    test "2 pairs" $ Assert.equal
-      (fromAssocArray [Tuple 0 0, Tuple 1 1])
-      (fromAssocArray [Tuple 1 1, Tuple 0 0])
-
-    test "3 pairs" $ Assert.equal
-      (fromAssocArray [Tuple 0 0, Tuple 1 1, Tuple 2 2])
-      (fromAssocArray [Tuple 1 1, Tuple 2 2, Tuple 0 0])
 
 props = do
   test "insert into empty == singleton" $ quickCheck
