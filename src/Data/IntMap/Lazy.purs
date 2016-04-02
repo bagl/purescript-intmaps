@@ -13,6 +13,7 @@ import Prelude (
 , class Eq, eq
 , class Semigroup, append
 , class Functor, (<$>)
+, class Apply, (<*>)
 , pure
 , const, id
 , (<<<), ($), otherwise, (==), (<>), (&&), (+)
@@ -38,12 +39,12 @@ lf :: forall a. Key -> a -> IntMap a
 lf k a = unstep $ Lf k a
 
 br :: forall a. Prefix -> Mask -> IntMap a -> IntMap a -> IntMap a
-br p m t1 t2 = go (step t1) (step t2)
+br p m t1 t2 = IntMap (go <$> runIntMap t1 <*> runIntMap t2)
   where
-    go Empty Empty = empty
-    go Empty _     = t2
-    go _     Empty = t1
-    go _     _     = unstep $ Br p m t1 t2
+    go Empty Empty = Empty
+    go Empty x     = x
+    go x     Empty = x
+    go _     _     = Br p m t1 t2
 
 empty :: forall a. IntMap a
 empty = unstep Empty
@@ -77,16 +78,16 @@ insertWith f = insertWithKey (\_ -> f)
 
 insertWithKey :: forall a. (Key -> a -> a -> a)
               -> Key -> a -> IntMap a -> IntMap a
-insertWithKey f k a t = go (step t)
+insertWithKey f k a t = IntMap (go <$> runIntMap t)
   where
-    go Empty = lf k a
+    go Empty = Lf k a
     go (Lf k0 a0)
-      | k0 == k   = lf k0 (f k a0 a)
+      | k0 == k   = Lf k0 (f k a0 a)
       | otherwise = join k (Mask 0) (lf k a) k0 (Mask 0) t
     go (Br p m l r)
       | matchPrefix p m k = if branchLeft m k
-                            then br p m (go $ step l) r
-                            else br p m l (go $ step r)
+                            then Br p m (insertWithKey f k a l) r
+                            else Br p m l (insertWithKey f k a r)
       | otherwise         = join k (Mask 0) (lf k a) (runPrefix p) m t
 
 
@@ -175,10 +176,10 @@ instance foldableIntMapLazy :: Foldable IntMap where
 -------------------------------------
 
 join :: forall a. Key -> Mask -> IntMap a
-     -> Key -> Mask -> IntMap a -> IntMap a
+     -> Key -> Mask -> IntMap a -> Step a
 join k1 m1 t1 k2 m2 t2 =
   if branchLeft m k1
-  then br (mask m k1) m t1 t2
-  else br (mask m k1) m t2 t1
+  then Br (mask m k1) m t1 t2
+  else Br (mask m k1) m t2 t1
   where
     m = branchingBit' k1 m1 k2 m2
