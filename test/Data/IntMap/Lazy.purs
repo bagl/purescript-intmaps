@@ -15,10 +15,24 @@ import Prelude (
 , (+), (/=), ($), (#), (<$>), (<<<)
 , map, bind, const, eq, pure, not)
 import Data.IntMap.Lazy
+import Data.IntMap as IMS
+import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
+
+err _ = unsafeThrow "ERR"
+frc f = f 1
+
+m1 = singleton 1 err
+
+testLazy x = Assert.equal true (const true x)
 
 testAll = test "Data.IntMap.Lazy" do
   test "Unit Tests" tests
   test "QuickCheck" props
+  test "laziness" do
+    test "map" $ testLazy (m1 # map frc)
+    test "insert" $ testLazy (m1 # insert 1 err)
+    test "t1" $ testLazy (map (_ $ 1) $ singleton 1 (\_ -> unsafeThrow "ERR"))
+    test "t2" $ testLazy (map (_ $ 1) $ IMS.singleton 1 (\_ -> unsafeThrow "ERR")) -- expected to throw
 
 tests = do
   test "insert into empty" do
