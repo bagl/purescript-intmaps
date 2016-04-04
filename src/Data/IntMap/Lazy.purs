@@ -91,6 +91,9 @@ insertWithKey f k a t = IntMap (go <$> runIntMap t)
       | otherwise         = join k (Mask 0) (lf k a) (runPrefix p) m t
 
 
+map :: forall a b. (a -> b) -> IntMap a -> IntMap b
+map f = mapWithKey (\_ a -> f a)
+
 mapWithKey :: forall a b. (Key -> a -> b) -> IntMap a -> IntMap b
 mapWithKey f t = IntMap (go <$> runIntMap t)
   where
